@@ -4,7 +4,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, BatchNormalization, Conv2D, Conv2DTranspose, LeakyReLU, Activation, Flatten, Dense
 
 # Define input shape
-input_shape = (256, 256, 3)
+input_shape = (128, 128, 3)  # Ubah ukuran input
 
 # Define generator model
 def build_generator():
@@ -12,42 +12,22 @@ def build_generator():
     input_layer = Input(shape=input_shape)
 
     # Convolutional layer
-    conv1 = Conv2D(64, (5, 5), strides=(1, 1), padding='same')(input_layer)
+    conv1 = Conv2D(32, (5, 5), strides=(1, 1), padding='same')(input_layer)  # Ubah jumlah filter
     bn1 = BatchNormalization()(conv1)
     relu1 = LeakyReLU(alpha=0.2)(bn1)
 
     # Convolutional layer
-    conv2 = Conv2D(128, (5, 5), strides=(2, 2), padding='same')(relu1)
+    conv2 = Conv2D(64, (5, 5), strides=(2, 2), padding='same')(relu1)
     bn2 = BatchNormalization()(conv2)
     relu2 = LeakyReLU(alpha=0.2)(bn2)
 
-    # Convolutional layer
-    conv3 = Conv2D(256, (5, 5), strides=(2, 2), padding='same')(relu2)
-    bn3 = BatchNormalization()(conv3)
+    # Transposed convolutional layer
+    deconv1 = Conv2DTranspose(32, (5, 5), strides=(2, 2), padding='same')(relu2)  # Ubah jumlah filter dan strides
+    bn3 = BatchNormalization()(deconv1)
     relu3 = LeakyReLU(alpha=0.2)(bn3)
 
-    # Convolutional layer
-    conv4 = Conv2D(512, (5, 5), strides=(2, 2), padding='same')(relu3)
-    bn4 = BatchNormalization()(conv4)
-    relu4 = LeakyReLU(alpha=0.2)(bn4)
-
-    # Transposed convolutional layer
-    deconv1 = Conv2DTranspose(256, (5, 5), strides=(2, 2), padding='same')(relu4)
-    bn5 = BatchNormalization()(deconv1)
-    relu5 = LeakyReLU(alpha=0.2)(bn5)
-
-    # Transposed convolutional layer
-    deconv2 = Conv2DTranspose(128, (5, 5), strides=(2, 2), padding='same')(relu5)
-    bn6 = BatchNormalization()(deconv2)
-    relu6 = LeakyReLU(alpha=0.2)(bn6)
-
-    # Transposed convolutional layer
-    deconv3 = Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same')(relu6)
-    bn7 = BatchNormalization()(deconv3)
-    relu7 = LeakyReLU(alpha=0.2)(bn7)
-
     # Output layer
-    output_layer = Conv2D(3, (5, 5), activation='tanh', padding='same')(relu7)
+    output_layer = Conv2D(3, (5, 5), activation='tanh', padding='same')(relu3)
 
     # Define generator model
     generator = Model(input_layer, output_layer)
@@ -60,23 +40,11 @@ def build_discriminator():
     input_layer = Input(shape=input_shape)
 
     # Convolutional layer
-    conv1 = Conv2D(64, (5, 5), strides=(2, 2), padding='same')(input_layer)
+    conv1 = Conv2D(32, (5, 5), strides=(2, 2), padding='same')(input_layer)  # Ubah jumlah filter
     relu1 = LeakyReLU(alpha=0.2)(conv1)
 
-    # Convolutional layer
-    conv2 = Conv2D(128, (5, 5), strides=(2, 2), padding='same')(relu1)
-    relu2 = LeakyReLU(alpha=0.2)(conv2)
-
-    # Convolutional layer
-    conv3 = Conv2D(256, (5, 5), strides=(2, 2), padding='same')(relu2)
-    relu3 = LeakyReLU(alpha=0.2)(conv3)
-
-    # Convolutional layer
-    conv4 = Conv2D(512, (5, 5), strides=(2, 2), padding='same')(relu3)
-    relu4 = LeakyReLU(alpha=0.2)(conv4)
-
     # Flatten layer
-    flat = Flatten()(relu4)
+    flat = Flatten()(relu1)
 
     # Dense layer
     dense = Dense(1, activation='sigmoid')(flat)
